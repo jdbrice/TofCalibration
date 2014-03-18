@@ -1,0 +1,147 @@
+<?xml version="1.0" standalone="yes"?>
+<run number="15047086">
+ <runsummary>
+  <run_number>15047086</run_number>
+  <starttime_unix>1392594286</starttime_unix>
+  <stoptime_unix>1392595126</stoptime_unix>
+  <completion_status>1</completion_status>
+  <global_setup_name>production_15GeV_2014</global_setup_name>
+  <daq_setup_name>physics</daq_setup_name>
+  <clock_source>unknown</clock_source>
+  <events>98780</events>
+  <files>
+   <daq>53</daq>
+   <trigger>0</trigger>
+   <scaler>29</scaler>
+  </files>
+  <detectors>tof emc eemc tpx mtd gmt L4 daq trg</detectors>
+  <magnet>
+   <amps>-4,510.0</amps>
+   <desc>Polarity B (Reversed) Full Field</desc>
+  </magnet>
+ </runsummary>
+ <rhic_summary>
+  <yellow_ring>
+   <species>Au</species>
+   <energy>7.273</energy>
+   <ions>74.19300079</ions>
+   <fill_id>17,689</fill_id>
+  </yellow_ring>
+  <blue_ring>
+   <species>Au</species>
+   <energy>7.273</energy>
+   <ions>78.98799896</ions>
+   <fill_id>17,689</fill_id>
+  </blue_ring>
+ </rhic_summary>
+ <trigger_summary>
+  <clock_start>9.307</clock_start>
+  <clock_stop>9.307</clock_stop>
+  <tierone_file_name>trg_14021400.bin</tierone_file_name>
+  <triggers>
+   <trigger name="bbc_mon_tof" stream="physics" daq_trg_id="2" offline_trg_id="1" prescale="49.5" nevents="6558"/>
+   <trigger name="hlt-bes-mon" stream="physics" daq_trg_id="10" offline_trg_id="3" prescale="2476.0" nevents="96"/>
+   <trigger name="ZDC-mb" stream="physics" daq_trg_id="40000" offline_trg_id="6" prescale="1.0" nevents="3238"/>
+   <trigger name="VPD_mb" stream="physics" daq_trg_id="20000" offline_trg_id="9" prescale="1.0" nevents="67519"/>
+   <trigger name="Zero-bias" stream="zerobias" daq_trg_id="200000" offline_trg_id="9300" prescale="1.0" nevents="3802"/>
+   <trigger name="BBC_mb" stream="physics" daq_trg_id="10000" offline_trg_id="440005" prescale="4952.0" nevents="112"/>
+   <trigger name="MB_sel1" stream="physics" daq_trg_id="1" offline_trg_id="440050" prescale="4456.7" nevents="125"/>
+   <trigger name="hlt-good-sel1" stream="hltgood" daq_trg_id="8" offline_trg_id="440060" prescale="2.4" nevents="35277"/>
+  </triggers>
+ </trigger_summary>
+ <hpss_summary>
+  <files_daq>
+   <file name="st_hltgood_15047086_raw_1000002.daq" beginEvent="41" endEvent="283921" numberOfEvents="3501" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_1500001.daq" beginEvent="2" endEvent="283932" numberOfEvents="3533" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_2000002.daq" beginEvent="263" endEvent="283923" numberOfEvents="3506" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_2500001.daq" beginEvent="4" endEvent="283964" numberOfEvents="3451" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_3000002.daq" beginEvent="55" endEvent="283935" numberOfEvents="3585" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_3500002.daq" beginEvent="106" endEvent="283946" numberOfEvents="1672" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_3500003.daq" beginEvent="96" endEvent="283976" numberOfEvents="1673" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_4000002.daq" beginEvent="107" endEvent="283877" numberOfEvents="3375" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_4500002.daq" beginEvent="98" endEvent="283938" numberOfEvents="3379" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_5000002.daq" beginEvent="139" endEvent="283869" numberOfEvents="3418" hpss="1"/>
+   <file name="st_hltgood_15047086_raw_5500001.daq" beginEvent="30" endEvent="283680" numberOfEvents="3505" hpss="1"/>
+   <file name="st_hltgood_adc_15047086_raw_0500004.daq" beginEvent="510" endEvent="283638" numberOfEvents="679" hpss="1">
+    <children>
+     <file name="st_hltgood_adc_15047086_raw_1000005.daq" beginEvent="2091" endEvent="281401" numberOfEvents="69"/>
+     <file name="st_hltgood_adc_15047086_raw_1500005.daq" beginEvent="6752" endEvent="274272" numberOfEvents="60"/>
+     <file name="st_hltgood_adc_15047086_raw_2000005.daq" beginEvent="4253" endEvent="283563" numberOfEvents="76"/>
+     <file name="st_hltgood_adc_15047086_raw_2500004.daq" beginEvent="1734" endEvent="277454" numberOfEvents="74"/>
+     <file name="st_hltgood_adc_15047086_raw_3000005.daq" beginEvent="9985" endEvent="282625" numberOfEvents="56"/>
+     <file name="st_hltgood_adc_15047086_raw_3500004.daq" beginEvent="816" endEvent="274846" numberOfEvents="67"/>
+     <file name="st_hltgood_adc_15047086_raw_4000005.daq" beginEvent="5467" endEvent="283587" numberOfEvents="58"/>
+     <file name="st_hltgood_adc_15047086_raw_4500005.daq" beginEvent="1428" endEvent="283638" numberOfEvents="74"/>
+     <file name="st_hltgood_adc_15047086_raw_5000005.daq" beginEvent="11699" endEvent="283179" numberOfEvents="64"/>
+     <file name="st_hltgood_adc_15047086_raw_5500004.daq" beginEvent="510" endEvent="282720" numberOfEvents="81"/>
+    </children>
+   </file>
+   <file name="st_physics_15047086_raw_1000001.daq" beginEvent="21" endEvent="283951" numberOfEvents="7266" hpss="1"/>
+   <file name="st_physics_15047086_raw_1500002.daq" beginEvent="132" endEvent="283952" numberOfEvents="7502" hpss="1"/>
+   <file name="st_physics_15047086_raw_2000001.daq" beginEvent="3" endEvent="283923" numberOfEvents="7510" hpss="1"/>
+   <file name="st_physics_15047086_raw_2500002.daq" beginEvent="44" endEvent="283914" numberOfEvents="7320" hpss="1"/>
+   <file name="st_physics_15047086_raw_3000001.daq" beginEvent="15" endEvent="283945" numberOfEvents="7253" hpss="1"/>
+   <file name="st_physics_15047086_raw_3500001.daq" beginEvent="6" endEvent="283976" numberOfEvents="7314" hpss="1"/>
+   <file name="st_physics_15047086_raw_4000001.daq" beginEvent="67" endEvent="283877" numberOfEvents="7363" hpss="1"/>
+   <file name="st_physics_15047086_raw_4500001.daq" beginEvent="68" endEvent="283878" numberOfEvents="7353" hpss="1"/>
+   <file name="st_physics_15047086_raw_5000001.daq" beginEvent="109" endEvent="283979" numberOfEvents="7311" hpss="1"/>
+   <file name="st_physics_15047086_raw_5500002.daq" beginEvent="50" endEvent="283970" numberOfEvents="7342" hpss="1"/>
+   <file name="st_physics_adc_15047086_raw_0000004.daq" beginEvent="612" endEvent="283971" numberOfEvents="1108" hpss="1">
+    <children>
+     <file name="st_physics_adc_15047086_raw_1000004.daq" beginEvent="2091" endEvent="283971" numberOfEvents="135"/>
+     <file name="st_physics_adc_15047086_raw_1500003.daq" beginEvent="612" endEvent="277352" numberOfEvents="141"/>
+     <file name="st_physics_adc_15047086_raw_2000004.daq" beginEvent="3723" endEvent="283563" numberOfEvents="136"/>
+     <file name="st_physics_adc_15047086_raw_3000004.daq" beginEvent="8455" endEvent="280585" numberOfEvents="137"/>
+     <file name="st_physics_adc_15047086_raw_3500006.daq" beginEvent="2346" endEvent="280466" numberOfEvents="137"/>
+     <file name="st_physics_adc_15047086_raw_4000004.daq" beginEvent="2907" endEvent="283077" numberOfEvents="136"/>
+     <file name="st_physics_adc_15047086_raw_5000004.daq" beginEvent="969" endEvent="280109" numberOfEvents="143"/>
+     <file name="st_physics_adc_15047086_raw_5500005.daq" beginEvent="1020" endEvent="281690" numberOfEvents="143"/>
+    </children>
+   </file>
+   <file name="st_physics_adc_15047086_raw_2500005.daq" beginEvent="3774" endEvent="280534" numberOfEvents="169" hpss="1"/>
+   <file name="st_physics_adc_15047086_raw_4500003.daq" beginEvent="408" endEvent="283128" numberOfEvents="147" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_1000003.daq" beginEvent="81" endEvent="283711" numberOfEvents="372" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_1500004.daq" beginEvent="2242" endEvent="283872" numberOfEvents="381" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_2000003.daq" beginEvent="1723" endEvent="283763" numberOfEvents="367" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_2500003.daq" beginEvent="634" endEvent="283154" numberOfEvents="364" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_3000003.daq" beginEvent="255" endEvent="283475" numberOfEvents="405" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_3500005.daq" beginEvent="996" endEvent="283606" numberOfEvents="378" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_4000003.daq" beginEvent="537" endEvent="283817" numberOfEvents="362" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_4500004.daq" beginEvent="818" endEvent="283928" numberOfEvents="415" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_5000003.daq" beginEvent="349" endEvent="282289" numberOfEvents="384" hpss="1"/>
+   <file name="st_zerobias_adc_15047086_raw_5500003.daq" beginEvent="160" endEvent="282060" numberOfEvents="374" hpss="1"/>
+  </files_daq>
+  <files_scaler/>
+  <files_trigger>
+   <file name="run15047086.10.dat" hpss="1"/>
+   <file name="run15047086.11.dat" hpss="1"/>
+   <file name="run15047086.12.dat" hpss="1"/>
+   <file name="run15047086.13.dat" hpss="1"/>
+   <file name="run15047086.14.dat" hpss="1"/>
+   <file name="run15047086.15.dat" hpss="1"/>
+   <file name="run15047086.16.dat" hpss="1"/>
+   <file name="run15047086.17.dat" hpss="1"/>
+   <file name="run15047086.18.dat" hpss="1"/>
+   <file name="run15047086.19.dat" hpss="1"/>
+   <file name="run15047086.1.dat" hpss="1"/>
+   <file name="run15047086.20.dat" hpss="1"/>
+   <file name="run15047086.21.dat" hpss="1"/>
+   <file name="run15047086.22.dat" hpss="1"/>
+   <file name="run15047086.23.dat" hpss="1"/>
+   <file name="run15047086.24.dat" hpss="1"/>
+   <file name="run15047086.25.dat" hpss="1"/>
+   <file name="run15047086.26.dat" hpss="1"/>
+   <file name="run15047086.27.dat" hpss="1"/>
+   <file name="run15047086.28.dat" hpss="1"/>
+   <file name="run15047086.29.dat" hpss="1"/>
+   <file name="run15047086.2.dat" hpss="1"/>
+   <file name="run15047086.3.dat" hpss="1"/>
+   <file name="run15047086.4.dat" hpss="1"/>
+   <file name="run15047086.5.dat" hpss="1"/>
+   <file name="run15047086.6.dat" hpss="1"/>
+   <file name="run15047086.7.dat" hpss="1"/>
+   <file name="run15047086.8.dat" hpss="1"/>
+   <file name="run15047086.9.dat" hpss="1"/>
+  </files_trigger>
+ </hpss_summary>
+</run>
