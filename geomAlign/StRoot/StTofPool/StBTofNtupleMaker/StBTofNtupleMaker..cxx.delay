@@ -1,0 +1,434 @@
+/*******************************************************************
+ *
+ * $Id: StBTofNtupleMaker.cxx,v 1.8 2008/05/08 21:09:37 dongx Exp $
+ *
+ * Author: Xin Dong
+ *****************************************************************
+ *
+ * Description: example maker to get the matched TOFr cells and fill
+ *              into TOFr tree.
+ *
+ *****************************************************************
+ *
+ * $Log: StBTofNtupleMaker.cxx,v $
+ *
+ *******************************************************************/
+#include <iostream>
+#include <math.h>
+#include <vector>
+#include <stdlib.h>
+#include <stdio.h>
+#include <algorithm>
+#include <iterator>
+
+#include "StEventTypes.h"
+#include "Stypes.h"
+#include "StThreeVectorF.hh"
+#include "StMeasuredPoint.h"
+#include "StDedxPidTraits.h"
+#include "StTrackPidTraits.h"
+#include "StBTofPidTraits.h"
+#include "StBTofCollection.h"
+#include "StBTofHit.h"
+#include "StarClassLibrary/StParticleTypes.hh"
+#include "StarClassLibrary/StParticleDefinition.hh"
+#include "StMuDSTMaker/COMMON/StMuUtilities.h"
+#include "StMuDSTMaker/COMMON/StMuPrimaryVertex.h"
+#include "StMuDSTMaker/COMMON/StMuDst.h"
+#include "StMuDSTMaker/COMMON/StMuEvent.h"
+#include "StMuDSTMaker/COMMON/StMuDstMaker.h"
+#include "StMuDSTMaker/COMMON/StMuTrack.h"
+#include "StHelix.hh"
+#include "StTrackGeometry.h"
+#include "StDcaGeometry.h"
+#include "StParticleTypes.hh"
+#include "StTpcDedxPidAlgorithm.h"
+#include "StHit.h"
+#include "StAssociationMaker/StTrackPairInfo.hh"
+#include "StEventUtilities/StuRefMult.hh"
+#include "PhysicalConstants.h"
+#include "StPhysicalHelixD.hh"
+#include "TTree.h"
+#include "TFile.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "StMemoryInfo.hh"
+#include "StMessMgr.h"
+#include "StTimer.hh"
+#include "tables/St_g2t_vertex_Table.h" // tmp for Dz(vertex)
+#include "tables/St_vertexSeed_Table.h" //
+
+#include "StBTofUtil/tofPathLength.hh"
+#include "StBTofUtil/StBTofGeometry.h"
+#include "StBTofUtil/StBTofDaqMap.h"
+#include "StBTofUtil/StBTofHitCollection.h"
+#include "StBTofNtupleMaker.h"
+
+ClassImp(StBTofNtupleMaker)
+
+//---------------------------------------------------------------------------
+/// constructor sets default parameters
+StBTofNtupleMaker::StBTofNtupleMaker(const Char_t *name="tofNtuple", const Char_t *outname="tofntuple.root") : StMaker(name) {
+  mTupleFileName=outname;
+  
+  doPrintMemoryInfo = kFALSE;
+  doPrintCpuInfo    = kFALSE;
+
+  //setOuterGeometry(kFALSE);
+  setEventMode(kFALSE);//MuDst
+}
+
+/// default empty destructor
+StBTofNtupleMaker::~StBTofNtupleMaker(){ /* nope */}
+
+//---------------------------------------------------------------------------
+/// initialize ntuple and daqmap, and reset counters
+Int_t StBTofNtupleMaker::Init(){
+
+  if (mTupleFileName!="") bookNtuples();
+
+  mAcceptedEvents = 0;
+  mPvpdEntries = 0;
+  mBTofEvents  = 0;
+  mBTofEntries = 0;
+
+  return kStOK;
+}
+
+
+Int_t StBTofNtupleMaker::InitRun(int runnumber) {
+
+/*
+  if(mInitGeomFromOther) {
+    TDataSet *geom = GetDataSet("btofGeometry");
+    mBTofGeom = (StBTofGeometry *)geom->GetObject();
+  } else {
+    mBTofGeom = new StBTofGeometry("btofGeoNtuple","tofGeo in NtupleMaker");
+    if(!mBTofGeom->IsInitDone()) {
+      gMessMgr->Info("BTofGemetry initialization..." ,"OS");
+      TVolume *starHall = (TVolume *)GetDataSet("HALL");
+      mBTofGeom->Init(starHall);
+    } 
+  }
+*/
+  mBTofDaqMap = new StBTofDaqMap();
+  mBTofDaqMap->Init(this);
+  LOG_INFO << " Initialize Daq map ... " << endm;
+
+
+  return kStOK;
+}
+
+Int_t StBTofNtupleMaker::FinishRun(int runnumber)
+{
+/*
+  if(!mInitGeomFromOther) {
+    if(mBTofGeom) delete mBTofGeom;
+  }
+  mBTofGeom = 0;
+*/
+
+  if(mBTofDaqMap) delete mBTofDaqMap;
+  mBTofDaqMap = 0;
+  
+  return kStOK;
+}
+
+
+/// write and close the ntuple file
+Int_t StBTofNtupleMaker::Finish() {
+
+  if (!(mTupleFileName=="")){
+    mTupleFile->Write();
+    mTupleFile->Close();
+    LOG_INFO << "StBTofNtupleMaker::Finish() ntuple file " 
+	 << mTupleFileName  << " closed." << endm;
+  }
+ 
+  //delete mPvpdTuple;
+  //delete mCellTuple;
+  //delete mTupleFile;
+ 
+  LOG_INFO << "StBTofNtupleMaker -- statistics" << endm;
+  LOG_INFO << " accepted events     : " << mAcceptedEvents << endm;
+  LOG_INFO << " pVPD entries        : " << mPvpdEntries << endm;
+  LOG_INFO << " BTof entries/events : " << mBTofEntries << "/" << mBTofEvents << endm;
+  return kStOK;
+}
+
+
+//---------------------------------------------------------------------------
+/// get tofr slat, pvpd rawdata and global data from StEvent and store in flat TTrees (ntuples)
+Int_t StBTofNtupleMaker::Make(){
+ // LOG_INFO << "StBTofNtupleMaker -- welcome" << endm;
+
+  mEventCounter->Fill(0);
+  StEvent *event = (StEvent *) GetInputDS("StEvent");
+  //StMuDstMaker *mudstMaker = (StMuDstMaker*) GetMaker("MuDst");
+  //.........................................................................
+  // event selection ...
+  if (!event) {
+   // LOG_INFO << "StBTofNtupleMaker -- nothing to do ... bye-bye"<< endm;
+    return kStOK;
+  }
+
+  mEventCounter->Fill(1);
+  mAcceptedEvents++;
+  StTimer timer;
+  if (doPrintCpuInfo) timer.start();
+  if (doPrintMemoryInfo) StMemoryInfo::instance()->snapshot();
+
+  //.........................................................................
+  // Collect global data for both ntuples
+
+  StEventInfo *info = event->info();
+  if(info) {
+    //-- Primary vertex & trigger information
+   // if(Debug()) LOG_INFO<<"runId: "<<event->runId()<<"  evtId: "<<event->id()<<endm;
+  }
+
+/*
+  float xvtx = -999.;
+  //xvtx = event->primaryVertex()->position().x();
+  float yvtx = -999.;
+  //yvtx = event->primaryVertex()->position().y();
+  float zvtx = -999.;
+  //zvtx = event->primaryVertex()->position().z();
+
+  StL0Trigger* pTrigger = event->l0Trigger();
+  unsigned int triggerWord = 0;
+  if (pTrigger) triggerWord = pTrigger->triggerWord();
+*/
+  
+  //-------- fill event summary info -----------
+  if(info) {
+    mCellData.run = event->runId();    // the run number
+    mCellData.evt = event->id();       // the event number
+  } else {
+    mCellData.run = 0;
+    mCellData.evt = 0;
+  }
+/*
+  mCellData.trgword = triggerWord;
+  mCellData.vertexX = xvtx;        
+  mCellData.vertexY = yvtx;              
+  mCellData.vertexZ = zvtx;              
+*/
+
+  //-- read in TOF info
+  int ntofhits = 0;
+/*
+  for(int i=0;i<4;i++) {
+    mCellData.triggerTime[i] = 0;
+  }
+*/
+  StBTofCollection *theTof = event->btofCollection();
+
+
+  double vpdDelay[38] = {11.852, 11.928, 11.764, 11.899, 11.915, 23.927, 11.735, 11.925, -0.014, 0.038,
+                         11.920, 0.143, -0.075, 24.103, 24.046, 0.0619, 0.0657, 0.0325, -0.026,         // West vpd
+                         11.915, 10.695, 11.913, 11.915, 11.814, 24.026, 11.934, 11.800, 0.067, -0.500,
+                         11.876, 0.000, 0.0220, 24.016, 24.284, 0.046, 0.055, 0.019, -0.030             // east vpd
+                        };
+
+  double triggerTime[4];
+  if (theTof && theTof->rawHitsPresent()){
+    for(int i=0;i<4;i++) {
+      triggerTime[i] = 0;
+    }
+    StBTofHeader *tofHeader = theTof->tofHeader();
+    if(tofHeader) {
+      for(int i=0;i<4;i++) {
+        triggerTime[i] = 25.*(tofHeader->triggerTime(i) & 0xfff);
+      }
+    }
+
+    mEventCounter->Fill(2);
+    StSPtrVecBTofRawHit& rawHits = theTof->tofRawHits();
+    for(size_t i=0;i<rawHits.size();i++) {
+      StBTofRawHit *aHit = rawHits[i];
+      if(!aHit) continue;
+      int fiberId = aHit->fiberId();
+      int tray = aHit->tray();
+      if(tray<=0||tray>122) {
+        LOG_WARN << " Wrong Hit at tray " << tray << endm;
+      }
+      int channel = aHit->channel();
+      unsigned int tdc = aHit->tdc();
+      int tube_le = -1;
+      int tube_te = -1;
+
+      double delay = 0.0;
+
+      if(aHit->leadingEdge()) {   // leading edge
+        if(tray<=120) {
+          mLe->Fill(tray-1, channel);
+        } else {
+          if(tray==121) tube_le = mBTofDaqMap->TDIGLeChan2WestPMT(channel);
+          if(tray==122) tube_le = mBTofDaqMap->TDIGLeChan2EastPMT(channel) + 19;
+          mLeVpd->Fill(tube_le-1);
+          delay = vpdDelay[tube_le-1];
+        }
+        double tdiff = tdc*25./1024 - triggerTime[fiberId] - delay;
+        if(tdiff<0.) tdiff += 51200.;
+        mLeTrg->Fill(tray-1, tdiff);
+      } else {   // trailing edge
+        if(tray<=120) {
+          mTe->Fill(tray-1, channel);
+        } else {
+          if(tray==121) tube_te = mBTofDaqMap->TDIGTeChan2WestPMT(channel);
+          if(tray==122) tube_te = mBTofDaqMap->TDIGTeChan2EastPMT(channel) + 19;
+          mTeVpd->Fill(tube_te-1);
+        }
+      }
+    }
+  }
+
+
+  if (theTof && theTof->hitsPresent()){
+    mEventCounter->Fill(3);
+
+    StSPtrVecBTofHit& hits = theTof->tofHits();
+    for(size_t i=0;i<hits.size();i++) {
+      StBTofHit *aHit = (StBTofHit *)hits[i];
+      mCellData.tray[ntofhits] = aHit->tray();
+      mCellData.module[ntofhits] = aHit->module();
+      mCellData.cell[ntofhits] = aHit->cell();
+      mCellData.letime[ntofhits] = aHit->leadingEdgeTime();
+      mCellData.tetime[ntofhits] = aHit->trailingEdgeTime();
+
+      ntofhits++;
+    }
+  }
+  mCellData.nTofHits = ntofhits;
+  
+//  mRawTuple->Fill();
+ // cout << " Three are " << ntofhits << " tof hits in this event! " << endl;
+  mBTofEntries = ntofhits;
+
+
+  //- debug info
+  if (doPrintMemoryInfo) {
+        StMemoryInfo::instance()->snapshot();
+        StMemoryInfo::instance()->print();
+  }
+  if (doPrintCpuInfo) {
+    timer.stop();
+    LOG_INFO << "CPU time for StEventMaker::Make(): "
+	 << timer.elapsedTime() << " sec\n" << endm;
+  }
+
+ // LOG_INFO << "StBTofNtupleMaker -- bye-bye" << endm;
+  return kStOK;
+}
+
+
+//---------------------------------------------------------------------------
+/// create and initialize ntuple and TTrees
+void StBTofNtupleMaker::bookNtuples(){
+  mTupleFile = new TFile(mTupleFileName.c_str(), "RECREATE");
+  LOG_INFO << "StBTofNtupleMaker::bookNtuples()  file "
+       << mTupleFileName << " opened" << endm;
+
+  mEventCounter = new TH1D("eventCounter","eventCounter",20,0.,20.);
+
+  mLe = new TH2D("le","le",120,0.,120.,192,0.,192.);
+  mTe = new TH2D("te","te",120,0.,120.,192,0.,192.);
+  mLeVpd = new TH1D("levpd","levpd",38,0.,38.);
+  mTeVpd = new TH1D("tevpd","tevpd",38,0.,38.);
+  mLeTrg = new TH2D("leTrg","leTrg",122,0.,122.,2560,0.,25600.);
+
+/*
+  mRawTuple = new TTree("raw","raw hits");
+  mRawTuple->SetAutoSave(1000000);
+  mRawTuple->Branch("run",&mCellData.run,"run/I");
+  mRawTuple->Branch("evt",&mCellData.evt,"evt/I");
+//  mRawTuple->Branch("triggerTime",mCellData.triggerTime,"triggerTime[4]/i");
+  mRawTuple->Branch("nTofHits",&mCellData.nTofHits,"nTofHits/I");
+//  mRawTuple->Branch("flag",mCellData.flag,"flag[nTofHits]/I");
+  mRawTuple->Branch("tray",mCellData.tray,"tray[nTofHits]/I");
+  mRawTuple->Branch("module",mCellData.module,"module[nTofHits]/I");
+  mRawTuple->Branch("cell",mCellData.cell,"cell[nTofHits]/I");
+  mRawTuple->Branch("letime",mCellData.letime,"letime[nTofHits]/D");
+  mRawTuple->Branch("tetime",mCellData.tetime,"tetime[nTofHits]/D");
+*/
+
+//  mRawTuple->Branch("channel",mCellData.channel,"channel[nTofHits]/I");
+//  mRawTuple->Branch("tdc",mCellData.tdc,"tdc[nTofHits]/i");
+/*
+  // pVPD timing
+  mPvpdTuple = new TTree("pvpd","tofr timing");
+  mPvpdTuple->SetAutoSave(1000);
+  mPvpdTuple->Branch("run",&mCellData.run,"run/I");
+  mPvpdTuple->Branch("evt",&mCellData.evt,"evt/I");
+  mPvpdTuple->Branch("trgword",&mCellData.trgword,"trgword/I");
+  mPvpdTuple->Branch("vertexX",&mCellData.vertexX,"vertexX/F");
+  mPvpdTuple->Branch("vertexY",&mCellData.vertexY,"vertexY/F");
+  mPvpdTuple->Branch("vertexZ",&mCellData.vertexZ,"vertexZ/F");
+  mPvpdTuple->Branch("vpdEast",&mCellData.vpdEast,"vpdEast/I");
+  mPvpdTuple->Branch("vpdWest",&mCellData.vpdWest,"vpdWest/I");
+  mPvpdTuple->Branch("numberOfVpdEast",&mCellData.numberOfVpdEast,"numberOfVpdEast/I");
+  mPvpdTuple->Branch("numberOfVpdWest",&mCellData.numberOfVpdWest,"numberOfVpdWest/I");
+  mPvpdTuple->Branch("tDiff",&mCellData.tDiff,"tDiff/F");
+  mPvpdTuple->Branch("pvpdLeadingEdgeTimeEast",&mCellData.pvpdLeadingEdgeTimeEast,"pvpdLeadingEdgeTimeEast[19]/D");
+  mPvpdTuple->Branch("pvpdLeadingEdgeTimeWest",&mCellData.pvpdLeadingEdgeTimeWest,"pvpdLeadingEdgeTimeWest[19]/D");
+  mPvpdTuple->Branch("pvpdTotEast",&mCellData.pvpdTotEast,"pvpdTotEast[19]/D");
+  mPvpdTuple->Branch("pvpdTotWest",&mCellData.pvpdTotWest,"pvpdTotWest[19]/D");
+
+  // BTof calibration ntuple
+  mCellTuple = new TTree("tof","BTof cell data");
+  mCellTuple->SetAutoSave(1000);
+  mCellTuple->Branch("run",&mCellData.run,"run/I");
+  mCellTuple->Branch("evt",&mCellData.evt,"evt/I");
+  mCellTuple->Branch("trgword",&mCellData.trgword,"trgword/I");
+  mCellTuple->Branch("vertexX",&mCellData.vertexX,"vertexX/F");
+  mCellTuple->Branch("vertexY",&mCellData.vertexY,"vertexY/F");
+  mCellTuple->Branch("vertexZ",&mCellData.vertexZ,"vertexZ/F");
+  mCellTuple->Branch("vpdEast",&mCellData.vpdEast,"vpdEast/I");
+  mCellTuple->Branch("vpdWest",&mCellData.vpdWest,"vpdWest/I");
+  mCellTuple->Branch("numberOfVpdEast",&mCellData.numberOfVpdEast,"numberOfVpdEast/I");
+  mCellTuple->Branch("numberOfVpdWest",&mCellData.numberOfVpdWest,"numberOfVpdWest/I");
+  mCellTuple->Branch("tDiff",&mCellData.tDiff,"tDiff/F");
+  mCellTuple->Branch("pvpdLeadingEdgeTimeEast",&mCellData.pvpdLeadingEdgeTimeEast,"pvpdLeadingEdgeTimeEast[19]/D");
+  mCellTuple->Branch("pvpdLeadingEdgeTimeWest",&mCellData.pvpdLeadingEdgeTimeWest,"pvpdLeadingEdgeTimeWest[19]/D");
+  mCellTuple->Branch("pvpdTotEast",&mCellData.pvpdTotEast,"pvpdTotEast[19]/D");
+  mCellTuple->Branch("pvpdTotWest",&mCellData.pvpdTotWest,"pvpdTotWest[19]/D");
+  mCellTuple->Branch("nTofHits",&mCellData.nTofHits,"nTofHits/I");
+  mCellTuple->Branch("tray",&mCellData.tray,"tray[nTofHits]/I");
+  mCellTuple->Branch("module",&mCellData.module,"module[nTofHits]/I");
+  mCellTuple->Branch("cell",&mCellData.cell,"cell[nTofHits]/I");
+  mCellTuple->Branch("daq",&mCellData.daq,"daq[nTofHits]/I");
+  mCellTuple->Branch("leadingEdgeTime",&mCellData.leadingEdgeTime,"leadingEdgeTime[nTofHits]/D");
+  mCellTuple->Branch("tot",&mCellData.tot,"tot[nTofHits]/D");
+//  mCellTuple->Branch("matchFlag",&mCellData.matchFlag,"matchFlag/I");
+  mCellTuple->Branch("xlocal",&mCellData.xlocal,"xlocal[nTofHits]/F");
+  mCellTuple->Branch("ylocal",&mCellData.ylocal,"ylocal[nTofHits]/F");
+  mCellTuple->Branch("zlocal",&mCellData.zlocal,"zlocal[nTofHits]/F");
+  mCellTuple->Branch("deltay",&mCellData.deltay,"deltay[nTofHits]/F");
+  mCellTuple->Branch("trackId",&mCellData.trackId,"trackId[nTofHits]/I");
+  mCellTuple->Branch("charge",&mCellData.charge,"charge[nTofHits]/I");
+  mCellTuple->Branch("p",&mCellData.p,"p[nTofHits]/F");
+  mCellTuple->Branch("pt",&mCellData.pt,"pt[nTofHits]/F");
+  mCellTuple->Branch("px",&mCellData.px,"px[nTofHits]/F");
+  mCellTuple->Branch("py",&mCellData.py,"py[nTofHits]/F");
+  mCellTuple->Branch("pz",&mCellData.pz,"pz[nTofHits]/F");
+  mCellTuple->Branch("eta",&mCellData.eta,"eta[nTofHits]/F");
+  mCellTuple->Branch("dcaX",&mCellData.dcaX,"dcaX[nTofHits]/F");
+  mCellTuple->Branch("dcaY",&mCellData.dcaY,"dcaY[nTofHits]/F");
+  mCellTuple->Branch("dcaZ",&mCellData.dcaZ,"dcaZ[nTofHits]/F");
+  mCellTuple->Branch("length",&mCellData.length,"length[nTofHits]/F");
+  mCellTuple->Branch("nHits",&mCellData.nHits,"nHits[nTofHits]/I");
+  mCellTuple->Branch("nHitsFit",&mCellData.nHitsFit,"nHitsFit[nTofHits]/I");
+  mCellTuple->Branch("nHitsDedx",&mCellData.nHitsDedx,"nHitsDedx[nTofHits]/I"); 
+  mCellTuple->Branch("dedx",&mCellData.dedx,"dedx[nTofHits]/F"); 
+  mCellTuple->Branch("dedxError",&mCellData.dedxError,"dedxError[nTofHits]/F"); 
+  mCellTuple->Branch("nSigE",&mCellData.nSigE,"nSigE[nTofHits]/F");
+  mCellTuple->Branch("nSigPi",&mCellData.nSigPi,"nSigPi[nTofHits]/F");
+  mCellTuple->Branch("nSigK",&mCellData.nSigK,"nSigK[nTofHits]/F");
+  mCellTuple->Branch("nSigP",&mCellData.nSigP,"nSigP[nTofHits]/F");
+  mCellTuple->Branch("tofcorr",&mCellData.tofcorr,"tofcorr[nTofHits]/F");
+  mCellTuple->Branch("beta",&mCellData.beta,"beta[nTofHits]/F");
+*/  
+  return;
+}
+

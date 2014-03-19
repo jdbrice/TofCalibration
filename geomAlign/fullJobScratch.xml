@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+	
+	<job maxFilesPerProcess="8" filesPerHour="2">
+
+	<command>
+		starver SL14a
+		pwd
+
+		root4star -b -q doMuDstEvents.C\(\"$FILELIST\",\"$JOBID.ntuple.root\"\) &gt;&amp; ${JOBID}.log
+	</command>
+
+	<stdout URL="file:/star/u/jdb/WORK/TOFCalib/run13Align/$JOBID.out" />
+	
+	<stderr URL="file:/star/u/jdb/WORK/TOFCalib/run13Align/$JOBID.err" />
+	
+	<input URL="file:/star/data9*/reco/pp500_production_2013*/ReversedFullField/DEV_TOF/2013/*/*/st_physics*.MuDst.root"/>
+
+	    <output fromScratch="*" toURL="file:/star/u/jdb/WORK/TOFCalib/run13Align/output/" />
+
+		<SandBox>
+		
+			<Package>
+				<File>file:./doMuDstEvents.C</File>
+				<File>file:./.sl64_gcc447/</File>
+			</Package>
+
+		</SandBox>
+
+		<Generator>
+			<Location>/star/u/jdb/WORK/TOFCalib/run13Align/generator</Location>
+		</Generator>
+		
+	</job>
+
