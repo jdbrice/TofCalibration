@@ -3,7 +3,7 @@ import sys, os
 print str( sys.argv )
 
 if len( sys.argv ) < 4:
-	print "makeScheduler.py filename outDir inputDir"
+	print "makeScheduler.py filename outDir inputDir (filesPerProcess filesPerHour)"
 	sys.exit(0)
 
 
@@ -42,18 +42,17 @@ else :
 	print "Data directory already exists\n"
 	sys.exit(1)
 
-f = open(filename, 'w')
+f = open( "schedule_" + filename, 'w')
 
 f.write( "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" )
 f.write( "<job maxFilesPerProcess=\"" + str(fpp) + "\" filesPerHour=\"" + str(fph) + "\">\n" )
 f.write( "\t<command>\n")
 f.write( "\t\tstarver SL14a\n \t\tpwd\n" )
-f.write( "\t\troot4star -b -q doMuDstEvents.C\(\"$FILELIST\",\"$JOBID.ntuple.root\"\) &gt;&amp; ${JOBID}.log\n" )
+f.write( "\t\troot4star -b -q " + filename +  ".C\(\"$FILELIST\",\"$JOBID.ntuple.root\"\) &gt;&amp; ${JOBID}.log\n" )
 f.write( "\t</command>\n\n")
 f.write( "\t<input URL=\"file:" + inputDir + "\"/>\n\n")
 f.write( "\t<stdout URL=\"file:" + outDir + "/log/$JOBID.out\" />\n\n" )
 f.write( "\t<stderr URL=\"file:" + outDir + "/log/$JOBID.err\" />\n\n" )
-
 f.write( "\t<output fromScratch=\"*\" toURL=\"file:" + outDir + "/output/\" />\n\n" );
 
 f.write( "\t<SandBox>\n \

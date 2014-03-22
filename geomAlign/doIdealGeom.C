@@ -6,7 +6,7 @@ class     St_db_Maker;
 St_db_Maker *dbMk =0;
 
 Int_t iEvt=0,istat=0,nEvents=0;
-void doMuDstEvents(const Char_t *fileList = "test.lis",
+void doIdealGeom(const Char_t *fileList = "test.lis",
                    const Char_t *ntuplename = "testing.ntuple.root")
 {
   Int_t nEvents = 1000000;//1000; //1000000;
