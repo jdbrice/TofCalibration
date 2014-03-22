@@ -42,7 +42,7 @@ else :
 	print "Data directory already exists\n"
 	sys.exit(1)
 
-f = open( "schedule_" + filename, 'w')
+f = open( "schedule_" + filename + ".xml", 'w')
 
 f.write( "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n" )
 f.write( "<job maxFilesPerProcess=\"" + str(fpp) + "\" filesPerHour=\"" + str(fph) + "\">\n" )
