@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<job maxFilesPerProcess="1" filesPerHour="10">
+<command>
+
+starver SL14a
+root4star -b -q  t0Calibration.C\(\"$FILELIST\",\"$JOBID.hist.root\"\) &gt;&amp; ${JOBID}.log
+
+</command>
+    <stdout URL="file:/star/u/jdb/current/t0Calibration/t14Startless/log/$JOBID.out" />
+    <stderr URL="file:/star/u/jdb/current/t0Calibration/t14Startless/log/$JOBID.err" />
+    <input URL="file:/star/data*/reco/production_15GeV_2014/ReversedFullField/P14ic/2014/0*/*/st*.MuDst.root" />
+    <output fromScratch="*" toURL="file:/star/u/jdb/current/t0Calibration/t14Startless/output/" />
+	<SandBox>
+		<Package>
+			<File>file:./t0Calibration.C</File>
+			<File>file:./.sl64_gcc447/</File>
+			<File>file:./db/t0_4DB.dat</File>
+			<File>file:./db/totCali_4DB.dat</File>
+		    <File>file:./db/zCali_4DB.dat</File>
+			<File>file:./db/pvpdCali_4DB.dat</File>
+			<File>file:./geometry.txt</File>
+		</Package>
+	</SandBox>
+
+	<Generator>
+		<Location>/star/u/jdb/current/t0Calibration/t14Startless/generator</Location>
+	</Generator>
+</job>
+

@@ -1,0 +1,114 @@
+/*******************************************************************
+ *
+ * $Id: StBTofNtupleMaker.h,v 1.4 2008/05/06 18:42:09 dongx Exp $
+ *
+ * Author: Xin Dong
+ *****************************************************************
+ *
+ * Description: example maker to get the matched TOFr cells and fill
+ *              into TOFr tree.
+ *
+ *****************************************************************
+ *
+ * $Log: StBTofNtupleMaker.h,v $
+ *
+ *******************************************************************/
+#ifndef StBTofNtupleMaker_hh     
+#define StBTofNtupleMaker_hh
+#include "StMaker.h"
+#include "StThreeVectorD.hh"
+#include "StPhysicalHelixD.hh"
+#include "StBTofCellData.h"
+
+#include <string>
+#include <vector>
+#ifndef ST_NO_NAMESPACES
+using std::string;
+using std::vector;
+#endif
+
+class StEvent;
+class StTrack;
+class StGlobalTrack;
+class StHelix;
+#include "StThreeVectorF.hh"
+class StTrackGeometry;
+class StDcaGeometry;  
+class StBTofGeometry; 
+class StBTofDaqMap;
+class StBTofCollection;
+class StBTofRawHitCollection;
+class StBTofHitCollection;   
+class StSPtrVecBTofRawHit;   
+class StSPtrVecBTofHit;      
+class TH1D;
+class TH2D;
+class TNtuple;
+
+class StBTofNtupleMaker : public StMaker {
+ public:
+  StBTofNtupleMaker(const Char_t *name, const Char_t *outname);
+  ~StBTofNtupleMaker();
+
+  Int_t  Init();
+  Int_t  InitRun(int runnumber);
+  Int_t  Make();
+  Int_t  FinishRun(int runnumber);
+  Int_t  Finish();
+
+  void SetNtupleFileName(Char_t*);
+  void setOuterTrackGeometry();
+  void setStandardTrackGeometry();
+  void setInitGeomFromOther(const Bool_t);
+  void setEventMode(const Bool_t);
+
+  void bookNtuples();
+
+private:
+  StBTofGeometry *mBTofGeom;  //! tofr geometry
+  Bool_t mInitGeomFromOther;  //! geometry initial from other makers
+  StBTofDaqMap * mBTofDaqMap;     //! tofr daq map
+  Bool_t mOuterTrackGeometry; //! select outer track geometry (true)
+  Bool_t mEventMode; //! select event mode (true:StEvent);
+
+  // ntuple related data members
+  Int_t mAcceptedEvents; //! number of accepted events
+  Int_t mPvpdEntries; //! number of pVPD ntuple entries
+  Int_t mBTofEvents; //! number of BTof events
+  Int_t mBTofEntries; //! number of BTof ntuple entries
+
+  string mTupleFileName; //!
+  TFile *mTupleFile; //!
+  
+  TH1D*  mEventCounter;
+  TH2D*  mLe;
+  TH2D*  mTe;
+  TH1D*  mLeVpd;
+  TH1D*  mTeVpd;
+  TH2D*  mLeTrg;
+
+  StBTofCellData  mCellData;
+
+  Bool_t  doPrintMemoryInfo; //! control debug memory data
+  Bool_t  doPrintCpuInfo; //! control debug timing data
+
+  TTree *mRawTuple;  //! raw hits ntuple
+  TTree *mPvpdTuple; //! pVPD start ntuple
+  TTree *mCellTuple; //! BTof calibration ntuple
+  TTree *mMatchTuple; //! BTof match ntuple
+  TTree *mNoMatchTuple; //! BTof match ntuple
+  TNtuple *mHitPosTuple; //! Hit position data
+
+  virtual const char *GetCVS() const 
+    {static const char cvs[]="Tag $Name:  $ $Id: StBTofNtupleMaker.h,v 1.4 2008/05/06 18:42:09 dongx Exp $ built "__DATE__" "__TIME__ ; return cvs;}
+
+  ClassDef(StBTofNtupleMaker,1)
+};
+
+inline void StBTofNtupleMaker::setOuterTrackGeometry(){mOuterTrackGeometry=false;}
+inline void StBTofNtupleMaker::setEventMode(Bool_t eventMode){mEventMode=eventMode;} //true: StEvent, false: StMuDst
+inline void StBTofNtupleMaker::setStandardTrackGeometry(){mOuterTrackGeometry=false;}
+inline void StBTofNtupleMaker::SetNtupleFileName(Char_t* filename){mTupleFileName=filename;}
+inline void StBTofNtupleMaker::setInitGeomFromOther(const Bool_t init) { mInitGeomFromOther = init; }
+
+#endif
