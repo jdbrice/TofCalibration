@@ -1,0 +1,3 @@
+
+rm log.txt
+./doCalib ntuples.txt 0 0 > log.txt
