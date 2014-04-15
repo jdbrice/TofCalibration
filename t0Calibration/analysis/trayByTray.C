@@ -1,3 +1,15 @@
+/*******************************************************************
+*
+*	Name:	trayByTray.C
+*	Description:
+*		Loads in the histogram BTofTimeRes_vs_Tray
+*		fits the FitSlicesY to a gaussian and 
+*		applies the mean as the new offset for each tray
+*
+*
+********************************************************************/
+
+
 #include <iostream>
 #include <fstream>
 using namespace std;
@@ -18,7 +30,6 @@ struct t0Offset {
 		int firstModule = 1; // inclusive
 		int lastModule = 32; // inclusive
 
-		std::vector<int> excludeTrays;
 };
 
 t0Offset newOffsets[ NUMBER_OF_OFFSETS ];
@@ -30,10 +41,6 @@ double applyOffsets( int tray, int module, double timing ){
 
 		if ( tray >= newOffsets[i].firstTray && tray <= newOffsets[i].lastTray ){
 			if ( module >= newOffsets[i].firstModule && module <= newOffsets[i].lastModule ){
-				
-				// manually zero out tray 38
-				if ( tray == 38 )
-					return 0;
 
 				return timing + newOffsets[i].t0;
 			}
@@ -47,15 +54,20 @@ double applyOffsets( int tray, int module, double timing ){
 
 void trayByTray() {
 
+	// initialize the offset structures to cover all moduels
 	for ( int i = 0; i < NUMBER_OF_OFFSETS; i++ ){
 		newOffsets[ i ].firstModule = 1;
 		newOffsets[ i ].lastModule = 32;
 	}
 
 	
+	// Load in the histogram file with the BTofTimeRes_vsTray histogram
 	TFile *input = new TFile( "allhists.root" );
 
 	/*
+	*	Perform the FitSlicesY using a gaussian 
+	*	The range may need to be changed depending on how
+	*	well the offsets are already aligned
 	*	
 	*/
 	TH2F * tHub = (TH2F*)BTofTimeRes_vs_Tray->Clone( "tHub" );

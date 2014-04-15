@@ -1,3 +1,13 @@
+/*******************************************************************
+*
+*	Name:	t0Modify.C
+*	Description:
+*		Basic script for applying t0 offsets to a DB file
+*
+*
+********************************************************************/
+
+
 #include <iostream>
 #include <fstream>
 using namespace std;
